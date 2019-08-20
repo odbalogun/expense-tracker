@@ -2,6 +2,7 @@
 """Database module, including the SQLAlchemy database object and DB-related utilities."""
 from .compat import basestring
 from .extensions import db
+from sqlalchemy.ext.declarative import declared_attr
 
 # Alias common SQLAlchemy names
 Column = db.Column
@@ -82,3 +83,37 @@ def reference_col(
         nullable=nullable,
         **column_kwargs
     )
+
+
+class UserRelated(SurrogatePK):
+    """A mixin that sub classes the SurrogatePK mixin and adds a user_id field as well as methods
+    to query by said field"""
+
+    # user_id = reference_col("users", nullable=True)
+    @declared_attr
+    def user_id(cls):
+        return reference_col("users", nullable=True)
+
+    @classmethod
+    def get_one_by_user_id(cls, user_id):
+        """Get single record by user ID."""
+        if any(
+                (
+                        isinstance(user_id, basestring) and user_id.isdigit(),
+                        isinstance(user_id, (int, float)),
+                )
+        ):
+            return cls.query.filter(user_id == int(user_id)).first()
+        return None
+
+    @classmethod
+    def get_many_by_user_id(cls, user_id):
+        """Get single record by user ID."""
+        if any(
+                (
+                        isinstance(user_id, basestring) and user_id.isdigit(),
+                        isinstance(user_id, (int, float)),
+                )
+        ):
+            return cls.query.filter(user_id == int(user_id)).all()
+        return None

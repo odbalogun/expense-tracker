@@ -45,6 +45,12 @@ docs/_build
 # Virtualenvs
 env/
 
+# IDE files
+.idea/
+
+# migrations
+migrations/
+
 # npm
 /node_modules/
 

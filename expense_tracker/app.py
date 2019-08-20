@@ -25,6 +25,9 @@ def create_app(config_object="expense_tracker.settings"):
     """
     app = Flask(__name__.split(".")[0])
     app.config.from_object(config_object)
+
+    from expense_tracker.expense import models
+
     register_extensions(app)
     register_blueprints(app)
     register_errorhandlers(app)
