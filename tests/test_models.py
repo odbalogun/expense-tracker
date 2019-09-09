@@ -15,7 +15,7 @@ class TestUser:
 
     def test_get_by_id(self):
         """Get user by ID."""
-        user = User("foo", "foo@bar.com")
+        user = User(username="foo", email="foo@bar.com")
         user.save()
 
         retrieved = User.get_by_id(user.id)
@@ -64,3 +64,14 @@ class TestUser:
         user.roles.append(role)
         user.save()
         assert role in user.roles
+
+    def test_encode_auth_token(self):
+        user = User.create(username="foo", email="foo@bar.com", password="foobarbaz123")
+        auth_token = user.encode_auth_token(user.id)
+        assert isinstance(auth_token, bytes) is True
+
+    def test_decode_auth_token(self):
+        user = User.create(username="foo", email="foo@bar.com", password="foobarbaz123")
+        auth_token = user.encode_auth_token(user.id)
+        assert isinstance(auth_token, bytes) is True
+        assert User.decode_auth_token(auth_token) == 1

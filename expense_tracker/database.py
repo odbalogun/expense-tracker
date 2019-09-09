@@ -107,7 +107,7 @@ class UserRelated(SurrogatePK):
         return None
 
     @classmethod
-    def get_many_by_user_id(cls, user_id):
+    def get_all_by_user_id(cls, user_id):
         """Get single record by user ID."""
         if any(
                 (

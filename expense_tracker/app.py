@@ -5,7 +5,7 @@ import sys
 
 from flask import Flask, render_template
 
-from expense_tracker import commands, public, user
+from expense_tracker import commands, public, user, expense
 from expense_tracker.extensions import (
     bcrypt,
     cache,
@@ -15,6 +15,7 @@ from expense_tracker.extensions import (
     login_manager,
     migrate,
     webpack,
+    ma,
 )
 
 
@@ -47,6 +48,7 @@ def register_extensions(app):
     debug_toolbar.init_app(app)
     migrate.init_app(app, db)
     webpack.init_app(app)
+    ma.init_app(app)
     return None
 
 
@@ -54,6 +56,7 @@ def register_blueprints(app):
     """Register Flask blueprints."""
     app.register_blueprint(public.views.blueprint)
     app.register_blueprint(user.views.blueprint)
+    app.register_blueprint(expense.views.blueprint)
     return None
 
 

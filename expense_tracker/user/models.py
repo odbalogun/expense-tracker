@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """User models."""
 import datetime as dt
+import jwt
+import os
 
 from flask_login import UserMixin
 
@@ -46,11 +48,11 @@ class User(UserMixin, SurrogatePK, Model):
     active = Column(db.Boolean(), default=False)
     is_admin = Column(db.Boolean(), default=False)
 
-    def __init__(self, username, email, password=None, **kwargs):
+    def __init__(self, **kwargs):
         """Create instance."""
-        db.Model.__init__(self, username=username, email=email, **kwargs)
-        if password:
-            self.set_password(password)
+        db.Model.__init__(self, **kwargs)
+        if kwargs.get('password'):
+            self.set_password(kwargs.get('password'))
         else:
             self.password = None
 
@@ -70,3 +72,49 @@ class User(UserMixin, SurrogatePK, Model):
     def __repr__(self):
         """Represent instance as a unique string."""
         return "<User({username!r})>".format(username=self.username)
+
+    def encode_auth_token(self, user_id):
+        """
+        Generates the Auth Token
+        :return: string
+        """
+        try:
+            payload = {
+                'exp': dt.datetime.utcnow() + dt.timedelta(days=0, seconds=5),
+                'iat': dt.datetime.utcnow(),
+                'sub': user_id
+            }
+            return jwt.encode(
+                payload,
+                os.getenv('SECRET_KEY', 'development'),
+                algorithm='HS256'
+            )
+        except Exception as e:
+            return e
+
+    @staticmethod
+    def decode_auth_token(auth_token):
+        """
+        Decodes the auth token
+        :param auth_token:
+        :return: integer|string
+        """
+        try:
+            payload = jwt.decode(auth_token, os.getenv('SECRET_KEY', 'development'))
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            return 'Signature expired. Please log in again.'
+        except jwt.InvalidTokenError:
+            return 'Invalid token. Please log in again.'
+
+    @classmethod
+    def get_by_auth_token(cls, auth_token):
+        """
+        Fetches a user by decoding its auth token
+        :param auth_token:
+        :return: User
+        """
+        user_id = cls.__class__.decode_auth_token(auth_token)
+        if not isinstance(user_id, str):
+            return cls.get_by_id(user_id)
+        return None
